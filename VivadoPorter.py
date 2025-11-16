@@ -27,6 +27,8 @@ def main():
             makedirs(package_path)
         if not path.exists(package_path + "/verilog"):
             makedirs(package_path + "/verilog")
+        if not path.exists(package_path + "/vhdl"):
+            makedirs(package_path + "/vhdl")
         if not path.exists(package_path + "/constraints"):
             makedirs(package_path + "/constraints")
         if not path.exists(package_path + "/ip"):
@@ -68,7 +70,7 @@ def create_non_pro_tcl(args):
     non_project_tcl_path = f"{package_path}/non_project.tcl"
 
     # 调用collect_files_by_type函数，并用列表接收返回值
-    v_files, xdc_files, xci_files, else_files = collect_and_copy_files_by_type(dir, package_path)
+    verilog_file, vhdl_files, xdc_files, xci_files, else_files = collect_and_copy_files_by_type(dir, package_path)
 
     #创建non_project.tcl文件
     try:
@@ -89,10 +91,15 @@ def create_non_pro_tcl(args):
 
     #添加verilog文件
     content =content + f"#read verilog file\n"
-    for v_file in v_files:
-        content = content + f"read_verilog ./verilog/{v_file}.v\n"
+    for verilog_file in verilog_file:
+        content = content + f"read_verilog ./verilog/{verilog_file}.v\n"
     content = content + "\n"
-        
+    #添加vhdl文件
+    content =content + f"#read vhdl file\n"
+    for vhdl_file in vhdl_files:
+        content = content + f"read_vhdl ./vhdl/{vhdl_file}.vhd\n"
+    content = content + "\n"
+    
     #添加xdc文件
     content =content + f"#read xdc file\n"
     for xdc_file in xdc_files:
@@ -145,7 +152,8 @@ def create_non_pro_tcl(args):
 
     
 def collect_and_copy_files_by_type(src, dst):
-    v_files = []
+    verilog_files = []
+    vhdl_files = []
     xdc_files = []
     xci_files = []
     else_files = []
@@ -156,8 +164,11 @@ def collect_and_copy_files_by_type(src, dst):
 
             # 匹配文件类型
             if ext == ".v":
-                v_files.append(name)
+                verilog_files.append(name)
                 copy(f'{src}/{file}', f'{dst}/verilog/{file}')
+            elif ext == ".vhd":
+                vhdl_files.append(name)
+                copy(f'{src}/{file}', f'{dst}/vhdl/{file}')
             elif ext == ".xdc":
                 xdc_files.append(name)
                 copy(f'{src}/{file}', f'{dst}/constraints/{file}')
@@ -169,7 +180,7 @@ def collect_and_copy_files_by_type(src, dst):
                 else_files.append(name)
                 print(f"未处理的文件类型: {file}")
 
-    return v_files, xdc_files, xci_files, else_files
+    return verilog_files, vhdl_files, xdc_files, xci_files, else_files
 
 
 
